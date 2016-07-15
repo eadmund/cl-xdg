@@ -1,0 +1,5 @@
+* cl-desktop
+
+CL-DESKTOP provides access to
+[[https://www.freedesktop.org/wiki/Specifications/desktop-entry-spec/]freedesktop.org
+desktop entries].

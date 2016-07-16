@@ -2,4 +2,6 @@
 ;;;; Copyright (C) 2016 by Robert A. Uhl
 
 (defpackage #:cl-desktop
-  (:use #:cl))
+  (:use #:cl)
+  (:export #:parse-desktop-file
+           #:get-key))

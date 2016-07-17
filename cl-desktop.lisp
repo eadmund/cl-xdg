@@ -201,13 +201,109 @@
                      ((integerp modifier) (setf modifier (subseq locale modifier))))
                    (return (list lang country encoding modifier)))))
 
-(defun get-key (key file &key (group "Desktop Entry"))
-  (loop for line in file
-     with in-group
-     when (and (consp line) (eq (first line) :group))
-     do (setf in-group (string= (second line) group))
-     when (and in-group (consp line) (string= (car line) key))
-     return (cdr line)))
+;; taken from http://cl-cookbook.sourceforge.net/strings.html
+(defun replace-all (string part replacement &key (test #'char=))
+  "Returns a new string in which all the occurences of the part
+is replaced with replacement."
+  (with-output-to-string (out)
+    (loop with part-length = (length part)
+       for old-pos = 0 then (+ pos part-length)
+       for pos = (search part string
+                         :start2 old-pos
+                         :test test)
+       do (write-string string out
+                        :start old-pos
+                        :end (or pos (length string)))
+       when pos do (write-string replacement out)
+       while pos)))
+
+(defun replace-escapes (str)
+  (let ((escapes '(("\\s" . " ")
+                   ("\\n" . "
+")
+                   ("\\t" . "	")
+                   ("\\r" . "")
+                   ("\\\\" . "\\"))))
+    (loop for (escape . replacement) in escapes
+       do (setf str (replace-all str escape replacement)))
+    str))
+
+(defun get-string-key (key file &key (group "Desktop Entry"))
+  (let ((str (get-ordered-hash `(,group ,key) file)))
+    (when str
+      (replace-escapes str))))
+
+(defun split-multi-string (str)
+  (loop for char across str
+     with items and acc and in-escape
+     do (case char
+          (#\\ (if in-escape
+                   (push #\\ acc)
+                   (setf in-escape t)))
+          (#\s (push (if in-escape
+                         #\Space
+                         #\s)
+                     acc))
+          (#\n (push (if in-escape
+                         #\Newline
+                         #\n)
+                     acc))
+          (#\t (push (if in-escape
+                         #\Tab
+                         #\t)
+                     acc))
+          (#\r (push (if in-escape
+                         #\Return
+                         #\r)
+                     acc))
+          (#\; (if in-escape
+                   (push #\; acc)
+                   (progn (push (coerce (reverse acc) 'string) items)
+                          (setf acc nil))))
+          (t (push char acc)))
+     finally (progn
+               (when acc
+                 (push (coerce (reverse acc) 'string) items))
+               (return (reverse items)))))
+
+(defun get-strings-key (key file &key (group "Desktop Entry"))
+  (let ((str (get-ordered-hash `(,group ,key) file)))
+    (when str
+      (split-multi-string str))))
+
+(defun get-locale-string-key (key file &key
+                                         (group "Desktop Entry")
+                                         (locales (lc-messages-to-locales)))
+  (loop for locale in locales
+     for value = (get-ordered-hash (append `(,group ,key) `(,locale)) file)
+     when value
+     do (return (replace-escapes value))
+     finally (return (get-string-key key file :group group))))
+
+(defun get-locale-strings-key (key file &key
+                                          (group "Desktop Entry")
+                                          (locales (lc-messages-to-locales)))
+  (loop for locale in locales
+     for value = (get-ordered-hash (append `(,group ,key) `(,locale)) file)
+     when value
+     do (return (split-multi-string value))
+     finally (return (get-strings-key key file :group group))))
+
+(defun get-boolean-key (key file &key (group "Desktop Entry"))
+  (let ((value (get-ordered-hash `(,group ,key) file)))
+    (when value
+      (cond
+        ((string= value "false") nil)
+        ((string= value "true") t)
+        (t (error "malformed boolean"))))))
+
+(defun get-numeric-key (key file &key (group "Desktop Entry"))
+  "PARSE-NUMBER:PARSE-NUMBER doesn't _quite_ implement the semantics
+of strtod/sscanf, but it's portable.  The desktop file spec doesn't
+define any standard number keys anyway."
+  (let ((value (get-ordered-hash `(,group ,key) file)))
+    (when value
+      (parse-number:parse-real-number value))))
 
 (defun load-desktop-files (&optional (subdir #P"applications/"))
   "Load desktop files from SUBDIR underneath *XDG-DATA-HOME* and each

@@ -6,6 +6,6 @@
   :author "Bob Uhl <bob.denver.co@gmail.com>"
   :license "GNU General Public License"
   :serial t
-  :depends-on (:uiop)
+  :depends-on (:uiop :split-sequence)
   :components ((:file "package")
                (:file "cl-desktop")))

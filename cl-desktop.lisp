@@ -110,31 +110,96 @@
   "Base directory relative to which user-specific non-essential data
   files should be stored.")
 
-;; Right now, files are just parsed to a fairly dumb list, and
-;; searched with a linear search.  It'd be nice to have a smarter
-;; representation, with less linear searching, but that can wait.
-;; This representation does make it quite easy to write out files with
-;; modifications while preserving their order.
-
 (defun parse-desktop-file (filespec)
   "Parse a desktop file."
   (with-open-file (file filespec :external-format :utf-8)
-    (loop for line = (read-line file nil :eof)
+    ;; stash each line of the file into an ordered hash table, with a
+    ;; key designed to be easy to look up: comments just get a gensym;
+    ;; group lines use the group name; keys use (GROUP KEY) or (GROUP
+    ;; KEY LOCALE).
+    (loop with group = nil
+       with hash = (make-ordered-hash-table :test 'equal)
+       for line = (read-line file nil :eof)
        until (eq line :eof)
-       collect (parse-desktop-file-line line))))
+       do (destructuring-bind (key value)
+              (parse-desktop-file-line line group)
+            (when (stringp key)
+              (setf group key))
+            (setf (get-ordered-hash key hash) value))
+       finally (return hash))))
 
-(defun parse-desktop-file-line (line)
+(defun parse-desktop-file-line (line current-group)
+  "Given a line and the currently-active group, return a key and a
+  value to store in the desktop file ordered hash.  The possibilities
+  are:
+
+ - comment: (GENSYM COMMENT)
+ - group: (GROUP NIL)
+ - key: ((GROUP KEY LOCALE) VALUE) or ((GROUP KEY) VALUE)"
   (cond
-    ((or (string= line "") (char= (aref line 0) #\#)) line)
+    ;; comment
+    ((or (string= line "") (char= (aref line 0) #\#))
+     (list (gensym "COMMENT") line))
+    ;; group
     ((char= (aref line 0) #\[)
      (if (char= (aref line (1- (length line))) #\])
-         `(:group ,(subseq line 1 (1- (length line))))
+         (list (subseq line 1 (1- (length line))) nil)
          (error "invalid group in line ~a" line)))
+    ;; key
     (t
-     (let ((split (position #\= line)))
-       (unless split
-         (error "invalid line ~a" line))
-       `(,(subseq line 0 split) . ,(subseq line (1+ split)))))))
+     (when (null current-group)
+       (error "key found without an active group"))
+     (let* ((pos (position #\= line))
+            (key (subseq line 0 pos))
+            (value (subseq line (1+ pos))))
+       (if (char= (aref key (1- (length key))) #\])
+           (destructuring-bind (key locale)
+               (split-sequence:split-sequence #\[ key :end (1- (length key)))
+             `((,current-group ,key ,locale) ,value))
+           `((,current-group ,key) ,value))))))
+
+(defun lc-messages-to-locales ()
+  "Convert LC_MESSAGES to a preference-ordered list of locales."
+  (let ((lc-messages (getenv-or-default "LC_MESSAGES" nil)))
+    (when lc-messages
+      (destructuring-bind (lang country encoding modifier &aux locales)
+          (parse-locale lc-messages)
+        (declare (ignore encoding))
+        (when (and lang country modifier)
+          (push (format nil "~a_~a@~a" lang country modifier) locales))
+        (when (and lang country)
+          (push (format nil "~a_~a" lang country) locales))
+        (when (and lang modifier)
+          (push (format nil "~a@~a" lang modifier) locales))
+        (when lang (push lang locales))
+        (reverse locales)))))
+
+(defun parse-locale (locale)
+  (loop for char across locale and i from 0
+         with lang = 0 and country and encoding and modifier
+         do (case char
+              (#\_ (cond
+                     ((integerp lang) (setf lang (subseq locale lang i)))
+                     (t (error "Unexpected #\_.")))
+                   (setf country (1+ i)))
+              (#\. (cond
+                     ((integerp lang) (setf lang (subseq locale lang i)))
+                     ((integerp country) (setf country (subseq locale country i)))
+                     (t (error "Unexpected #\..")))
+                   (setf encoding (1+ i)))
+              (#\@ (cond
+                     ((integerp lang) (setf lang (subseq locale lang i)))
+                     ((integerp country) (setf country (subseq locale country i)))
+                     ((integerp encoding) (setf encoding (subseq locale encoding i)))
+                     (t (error "Unexpected #\@.")))
+                   (setf modifier (1+ i))))
+         finally (progn
+                   (cond
+                     ((integerp lang) (setf lang (subseq locale lang)))
+                     ((integerp country) (setf country (subseq locale country)))
+                     ((integerp encoding) (setf encoding (subseq locale encoding)))
+                     ((integerp modifier) (setf modifier (subseq locale modifier))))
+                   (return (list lang country encoding modifier)))))
 
 (defun get-key (key file &key (group "Desktop Entry"))
   (loop for line in file

@@ -4,4 +4,11 @@
 (defpackage #:cl-desktop
   (:use #:cl)
   (:export #:parse-desktop-file
-           #:get-key))
+           #:get-key
+           #:*xdg-data-home*
+           #:*xdg-config-home*
+           #:*xdg-data-dirs*
+           #:*xdg-config-dirs*
+           #:*xdg-cache-home*
+           #:*xdg-runtime-dir*
+           #:load-desktop-files))

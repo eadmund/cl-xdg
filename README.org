@@ -10,7 +10,7 @@ desktop entries]].
 A pathname
 **** Initial value
 The value of ~$XDG_DATA_HOME~, or if that is unset or empty then
-~\~/.local/share/~
+=~/.local/share/=
 **** Description
 This indicates the base directory relative to which user-specific data
 files should be stored, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG Base Directory Specification]].
@@ -20,7 +20,7 @@ files should be stored, per the [[https://specifications.freedesktop.org/basedir
 A pathname
 **** Initial value
 The value of ~$XDG_CONFIG_HOME~, or if that is unset or empty then
-~\~\/.config\/~
+=~/.config/=
 **** Description
 This indicates the base directory relative to which user-specific
 configuration files should be stored, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG Base Directory
@@ -31,10 +31,10 @@ Specification]].
 A list of pathnames
 **** Initial value
 The value of ~$XDG_DATA_DIRS~, or if that is unset or empty then
-~("\/usr\/local\/share" "\/usr\/share\/")~
+=("/usr/local/share" "/usr/share/")=
 **** Description
 This is a preference-ordered list of base directories to search for
-data files in addition to ~\*xdg-data-home\*~, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG Base
+data files in addition to ~*xdg-data-home*~, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG Base
 Directory Specification]].
 
 *** Variable ~XDG-CONFIG-DIRS~
@@ -42,10 +42,10 @@ Directory Specification]].
 A list of pathnames
 **** Initial value
 The value of ~$XDG_CONFIG_DIRS~, or if that is unset or empty then
-~\/etc\/xdg~
+=/etc/xdg=
 **** Description
 This is a preference-ordered list of base directories to search for
-configuration files in additon to ~\xdg-config-home\*~, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG
+configuration files in additon to ~xdg-config-home*~, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG
 Base Directory Specification]].
 
 *** Variable ~XDG-CACHE-HOME~
@@ -53,7 +53,7 @@ Base Directory Specification]].
 A pathname
 **** Initial value
 The value of ~$XDG_CACHE_HOME~, or if that is unset or empty then
-~\~\/.cache~
+=~/.cache=
 **** Description
 This indicates the base directory relative to which user-specific
 non-essential data files should be stored, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG Base Directory
@@ -64,7 +64,7 @@ Specification]].
 A pathname
 **** Initial value
 The value of ~$XDG_RUNTIME_DIR~, or if that is unset or empty then
-a randomly-created random directory of the form ~\/tmp\/branch.XXXXXX~
+a randomly-created random directory of the form =/tmp/branch.XXXXXX=
 **** Description
 This indicates the base directory relative to which user-specific data
 files should be stored, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG Base Directory Specification]].

@@ -1,3 +1,5 @@
+#+OPTIONS: toc:2
+
 * cl-desktop
 
 CL-DESKTOP provides access to

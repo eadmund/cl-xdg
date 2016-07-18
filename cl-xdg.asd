@@ -10,4 +10,4 @@
   :components ((:file "package")
                (:file "xdg-vars")
                (:file "ordered-hash-table")
-               (:file "cl-xdg")))
+               (:file "desktop")))

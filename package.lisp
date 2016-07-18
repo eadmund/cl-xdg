@@ -1,7 +1,7 @@
 ;;;; package.lisp
 ;;;; Copyright (C) 2016 by Robert A. Uhl
 
-(defpackage #:cl-desktop
+(defpackage #:cl-xdg
   (:use #:cl)
   (:export #:parse-desktop-file
            #:load-desktop-files

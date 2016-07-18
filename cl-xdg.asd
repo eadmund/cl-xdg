@@ -1,8 +1,8 @@
-;;;; cl-desktop.asd
+;;;; cl-xdg.asd
 ;;;; Copyright (C) 2016 by Robert A. Uhl
 
-(asdf:defsystem #:cl-desktop
-  :description "freedesktop.org desktop entry handling"
+(asdf:defsystem #:cl-xdg
+  :description "freedesktop.org standards handling"
   :author "Bob Uhl <bob.denver.co@gmail.com>"
   :license "GNU General Public License"
   :serial t
@@ -10,4 +10,4 @@
   :components ((:file "package")
                (:file "xdg-vars")
                (:file "ordered-hash-table")
-               (:file "cl-desktop")))
+               (:file "cl-xdg")))

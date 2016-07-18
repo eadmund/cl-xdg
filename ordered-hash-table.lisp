@@ -1,7 +1,7 @@
 ;;;; ordered-hash-table.lisp
 ;;;; Copyright (C) 2016  Robert A. Uhl
 
-(in-package :cl-desktop)
+(in-package :cl-xdg)
 
 (defclass ordered-hash-table ()
   ((hash :type hash-table

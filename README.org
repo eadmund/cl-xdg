@@ -165,7 +165,7 @@ in precedence.
 - ~locales~ :: a list of each specific locale to search for; defaults
                to a sensible value based on ~$LC_MESSAGES~, per the
                rules in the XDG Desktop Entry Specification, e.g. if
-               ~$LC_MESSAGES~ = ~"en_GB.UTF-8@oxon"~ then the default
+               ~$LC_MESSAGES~ is "en_GB.UTF-8@oxon" then the default
                is ~("en_GB@oxon" "en_GB" "en@oxon" "en")~
 - ~items~ :: a list of strings containing the un-escaped values
              associated with ~key~, or ~nil~

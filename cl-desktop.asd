@@ -8,4 +8,6 @@
   :serial t
   :depends-on (:uiop :split-sequence :parse-number)
   :components ((:file "package")
+               (:file "xdg-vars")
+               (:file "ordered-hash-table")
                (:file "cl-desktop")))

@@ -72,7 +72,7 @@ This indicates the base directory relative to which user-specific data
 files should be stored, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG Base Directory Specification]].
 **** Bugs
 Random directory filename generation is only supported on SBCL, using
-~SB-POSIX:MKDTEMP~.  Other implementations will encounter an error if
+~SB-POSIX:MKDTEMP~.  Other implementations will encounter a warning if
 ~$XDG_CACHE_HOME~ is unset or empty.
 
 *** Function ~PARSE-DESKTOP-FILE~

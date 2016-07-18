@@ -5,6 +5,74 @@ CL-DESKTOP provides access to
 desktop entries]].
 ** API
 
+*** Variable ~XDG-DATA-HOME~
+**** Value type
+A pathname
+**** Initial value
+The value of ~$XDG_DATA_HOME~, or if that is unset or empty then
+~\~\/.local\/share\/~
+**** Description
+This indicates the base directory relative to which user-specific data
+files should be stored, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG Base Directory Specification]].
+
+*** Variable ~XDG-CONFIG-HOME~
+**** Value type
+A pathname
+**** Initial value
+The value of ~$XDG_CONFIG_HOME~, or if that is unset or empty then
+~\~\/.config\/~
+**** Description
+This indicates the base directory relative to which user-specific
+configuration files should be stored, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG Base Directory
+Specification]].
+
+*** Variable ~XDG-DATA-DIRS~
+**** Value type
+A list of pathnames
+**** Initial value
+The value of ~$XDG_DATA_DIRS~, or if that is unset or empty then
+~("\/usr\/local\/share" "\/usr\/share\/")~
+**** Description
+This is a preference-ordered list of base directories to search for
+data files in addition to ~\*xdg-data-home\*~, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG Base
+Directory Specification]].
+
+*** Variable ~XDG-CONFIG-DIRS~
+**** Value type
+A list of pathnames
+**** Initial value
+The value of ~$XDG_CONFIG_DIRS~, or if that is unset or empty then
+~\/etc\/xdg~
+**** Description
+This is a preference-ordered list of base directories to search for
+configuration files in additon to ~\xdg-config-home\*~, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG
+Base Directory Specification]].
+
+*** Variable ~XDG-CACHE-HOME~
+**** Value type
+A pathname
+**** Initial value
+The value of ~$XDG_CACHE_HOME~, or if that is unset or empty then
+~\~\/.cache~
+**** Description
+This indicates the base directory relative to which user-specific
+non-essential data files should be stored, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG Base Directory
+Specification]].
+
+*** Variable ~XDG-RUNTIME-DIR~
+**** Value type
+A pathname
+**** Initial value
+The value of ~$XDG_RUNTIME_DIR~, or if that is unset or empty then
+a randomly-created random directory of the form ~\/tmp\/branch.XXXXXX~
+**** Description
+This indicates the base directory relative to which user-specific data
+files should be stored, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG Base Directory Specification]].
+**** Bugs
+Random directory filename generation is only supported on SBCL, using
+~SB-POSIX:MKDTEMP~.  Other implementations will encounter an error if
+~$XDG_CACHE_HOME~ is unset or empty.
+
 *** Function ~PARSE-DESKTOP-FILE~
 **** Syntax
      ~parse-desktop-file filespec → desktop-file~
@@ -73,7 +141,7 @@ in precedence.
 - ~locales~ :: a list of each specific locale to search for; defaults
                to a sensible value based on ~$LC_MESSAGES~, per the
                rules in the XDG Desktop Entry Specification, e.g. if
-               ~$LC_MESSAGES~ = ~"en_GB.UTF-8@oxon"~ then the default
+               ~$LC_MESSAGES~ = ~\"en_GB.UTF-8@oxon\"~ then the default
                is ~("en_GB@oxon" "en_GB" "en@oxon" "en")~
 - ~value~ :: a string containing the un-escaped value associated with
   ~key~, or ~nil~
@@ -132,6 +200,6 @@ in precedence.
 ~get-number-key~ searches ~file~ for the indicated key, which must
  indicate a single number value.
 **** Bugs
-Uses ~PARSE-NUMBER:PARSE-REAL-NUMBER~ rather than ~sscand(3)~ or
+Uses ~PARSE-NUMBER:PARSE-REAL-NUMBER~ rather than ~sscanf(3)~ or
 ~strtof(3)~, so the number format is not quite to spec.  Supporting
 the POSIX C locale's number format is hard to do portably.

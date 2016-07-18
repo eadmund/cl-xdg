@@ -107,8 +107,8 @@
    (getenv-or-default "XDG_RUNTIME_DIR"
                       #+sbcl(sb-posix:mkdtemp "/tmp/branch.XXXXXX")
                       #-sbcl(error "XDG_RUNTIME_DIR not set")))
-  "Base directory relative to which user-specific non-essential data
-  files should be stored.")
+  "Base directory relative to which user-specific non-essential
+  runtime files should be stored.")
 
 (defun parse-desktop-file (filespec)
   "Parse a desktop file."

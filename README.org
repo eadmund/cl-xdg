@@ -1,4 +1,4 @@
-#+OPTIONS: toc:2
+#+OPTIONS: toc:3
 
 * cl-xdg
 
@@ -91,7 +91,7 @@ actually change soon; client code should not rely on that.
      ~load-desktop-files &optional subdir → desktop-files~
 **** Arguments and values
 - ~subdir~ :: A subdirectory underneath ~*xdg-data-home*~ to search;
-              defaults to =#P"applications/"=
+              defaults to =#P"applications/"​=
 - ~desktop-files~ :: A list containing all parsed desktop files found
 **** Description
 ~load-desktop-files~ finds & parses all desktop files from ~subdir~

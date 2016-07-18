@@ -2,6 +2,8 @@
 ;;;; Copyright (C) 2016  Robert A. Uhl
 ;; taken from StumpWM; copied under terms of the GPL
 
+(in-package #:cl-xdg)
+
 (defun getenv (var &optional default)
   "Return the value of the environment variable."
   #+allegro (sys::getenv (string var))

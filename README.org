@@ -1,5 +1,32 @@
 * cl-desktop
 
 CL-DESKTOP provides access to
-[[https://www.freedesktop.org/wiki/Specifications/desktop-entry-spec/]freedesktop.org
-desktop entries].
+[[https://www.freedesktop.org/wiki/Specifications/desktop-entry-spec/][freedesktop.org
+desktop entries]].
+** API
+
+*** Function *~PARSE-DESKTOP-FILE~*
+**** Syntax
+     *~parse-desktop-file~* _filespec_ → _desktop-file_
+**** Arguments and values
+- _filespec_:: a pathname designator
+- _desktop-file_:: an opaque object representing a parsed desktop file
+**** Description
+*~parse-desktop-file~* reads a single desktop file from disk.  The
+return value is currently a naked ordered hash table, but that should
+actually change soon; client code should not rely on that.
+
+*** Function *~GET-STRING-KEY~*
+**** Syntax
+     *~get-string-key~* _key_ _file_ &key _group_ → _value_
+**** Arguments and values
+- _key_:: a string
+- _file_:: a desktop file, as returned from *~parse-desktop-file~*
+- _group_:: a string indicating the group to find the key in; the
+  default is "Desktop Entry"
+- _value_:: a string containing the un-escaped value associated with
+  _key_, or ~nil~
+**** Description
+*~get-string-key~* searches _file_ for the indicated key, which must
+ indicate a single string value.  If found, any escape sequences are
+ replaced and the value is returned.

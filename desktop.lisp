@@ -18,6 +18,20 @@
 
 (in-package #:cl-xdg)
 
+(defclass desktop-files ()
+  ((files :type hash-table
+          :initarg :files)))
+
+(defclass desktop-file ()
+  ((hash :type ordered-hash-table
+         :initarg :hash)
+   (id :type string
+       :initarg :id
+       :accessor id)
+   (path :type pathname
+         :initarg :path
+         :accessor path)))
+
 (defun parse-desktop-file (filespec)
   "Parse a desktop file."
   (with-open-file (file filespec :external-format :utf-8)
@@ -34,7 +48,7 @@
             (when (stringp key)
               (setf group key))
             (setf (get-ordered-hash key hash) value))
-       finally (return hash))))
+       finally (return (make-instance 'desktop-file :hash hash)))))
 
 (defun parse-desktop-file-line (line current-group)
   "Given a line and the currently-active group, return a key and a
@@ -137,7 +151,7 @@ is replaced with replacement."
     str))
 
 (defun get-string-key (key file &key (group "Desktop Entry"))
-  (let ((str (get-ordered-hash `(,group ,key) file)))
+  (let ((str (get-ordered-hash `(,group ,key) (slot-value file 'hash))))
     (when str
       (replace-escapes str))))
 
@@ -175,7 +189,7 @@ is replaced with replacement."
                (return (reverse items)))))
 
 (defun get-strings-key (key file &key (group "Desktop Entry"))
-  (let ((str (get-ordered-hash `(,group ,key) file)))
+  (let ((str (get-ordered-hash `(,group ,key) (slot-value file 'hash))))
     (when str
       (split-multi-string str))))
 
@@ -183,7 +197,8 @@ is replaced with replacement."
                                          (group "Desktop Entry")
                                          (locales (lc-messages-to-locales)))
   (loop for locale in locales
-     for value = (get-ordered-hash (append `(,group ,key) `(,locale)) file)
+     for value = (get-ordered-hash (append `(,group ,key) `(,locale))
+                                   (slot-value file 'hash))
      when value
      do (return (replace-escapes value))
      finally (return (get-string-key key file :group group))))
@@ -192,13 +207,14 @@ is replaced with replacement."
                                           (group "Desktop Entry")
                                           (locales (lc-messages-to-locales)))
   (loop for locale in locales
-     for value = (get-ordered-hash (append `(,group ,key) `(,locale)) file)
+     for value = (get-ordered-hash (append `(,group ,key) `(,locale))
+                                   (slot-value file 'hash))
      when value
      do (return (split-multi-string value))
      finally (return (get-strings-key key file :group group))))
 
 (defun get-boolean-key (key file &key (group "Desktop Entry"))
-  (let ((value (get-ordered-hash `(,group ,key) file)))
+  (let ((value (get-ordered-hash `(,group ,key) (slot-value file 'hash))))
     (when value
       (cond
         ((string= value "false") nil)
@@ -209,7 +225,7 @@ is replaced with replacement."
   "PARSE-NUMBER:PARSE-NUMBER doesn't _quite_ implement the semantics
 of strtod/sscanf, but it's portable.  The desktop file spec doesn't
 define any standard number keys anyway."
-  (let ((value (get-ordered-hash `(,group ,key) file)))
+  (let ((value (get-ordered-hash `(,group ,key) (slot-value file 'hash))))
     (when value
       (parse-number:parse-real-number value))))
 
@@ -218,12 +234,19 @@ define any standard number keys anyway."
   of *XDG-DATA-DIRS*.  Desktop files found under #P\"applications/\"
   have IDs; files earlier in the search path take precedence over
   files later in the search path with the same ID."
-  (mapcar #'parse-desktop-file
-          (apply #'concatenate 'list
-                 (mapcar
-                  (lambda (dir)
-                    (directory
-                     (uiop:merge-pathnames*
-                      "*.desktop"
-                      (uiop:wilden (uiop:merge-pathnames* subdir dir)))))
-                  (cons *xdg-data-home* *xdg-data-dirs*)))))
+  ;; FIXME: this is hideous code
+  (loop for (file . id) in (mapcan (lambda (dir)
+                                     (let ((subdir (uiop:merge-pathnames* subdir dir)))
+                                       (mapcar (lambda (file)
+                                                 (cons file (replace-all (namestring (uiop:subpathp file subdir)) "/" "-")))
+                                               (uiop:directory*
+                                                (uiop:merge-pathnames*
+                                                 "*.desktop"
+                                                 (uiop:wilden subdir))))))
+                                   (cons *xdg-data-home* *xdg-data-dirs*))
+     with hash = (make-hash-table :test 'equal)
+     unless (gethash id hash)
+     do (let ((desktop-file (parse-desktop-file file)))
+          (setf (gethash id hash) desktop-file
+                (id desktop-file) id))
+     finally (return (make-instance 'desktop-files :files hash))))

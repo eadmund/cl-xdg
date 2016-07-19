@@ -27,10 +27,10 @@
          :initarg :hash)
    (id :type string
        :initarg :id
-       :accessor id)
+       :reader id)
    (path :type pathname
          :initarg :path
-         :accessor path)))
+         :reader path)))
 
 (defun parse-desktop-file (filespec)
   "Parse a desktop file."
@@ -48,7 +48,9 @@
             (when (stringp key)
               (setf group key))
             (setf (get-ordered-hash key hash) value))
-       finally (return (make-instance 'desktop-file :hash hash)))))
+       finally (return (make-instance 'desktop-file
+                                      :hash hash
+                                      :path (pathname filespace))))))
 
 (defun parse-desktop-file-line (line current-group)
   "Given a line and the currently-active group, return a key and a
@@ -248,5 +250,5 @@ define any standard number keys anyway."
      unless (gethash id hash)
      do (let ((desktop-file (parse-desktop-file file)))
           (setf (gethash id hash) desktop-file
-                (id desktop-file) id))
+                (slot-value desktop-file 'id) id))
      finally (return (make-instance 'desktop-files :files hash))))

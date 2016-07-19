@@ -75,6 +75,22 @@ Random directory filename generation is only supported on SBCL, using
 ~SB-POSIX:MKDTEMP~.  Other implementations will encounter a warning if
 ~$XDG_CACHE_HOME~ is unset or empty.
 
+*** Class ~DESKTOP-FILE~
+**** Class precedence list
+     ~standard-object~, ~t~
+**** Description
+A desktop file represents a single parsed desktop file, a collection
+of grouped keys and values.  Keys are unique within a group.  Keys may
+be strings, locale strings (i.e., they may have locale-specific string
+values), booleans or numbers.
+
+*** Class ~DESKTOP-FILES~
+**** Class precedence list
+     ~standard-object~, ~t~
+**** Description
+An object of class ~DESKTOP-FILES~ represents a collection of
+precedence-ordered parsed desktop files.  It will be possible to query
+such a collection to retrieve a particular desktop file.
 *** Function ~PARSE-DESKTOP-FILE~
 **** Syntax
      ~parse-desktop-file filespec → desktop-file~
@@ -82,9 +98,7 @@ Random directory filename generation is only supported on SBCL, using
 - ~filespec~ :: a pathname designator
 - ~desktop-file~ :: an opaque object representing a parsed desktop file
 **** Description
-~parse-desktop-file~ reads a single desktop file from disk.  The
-return value is currently a naked ordered hash table, but that should
-actually change soon; client code should not rely on that.
+~parse-desktop-file~ reads a single desktop file from disk.
 
 *** Function ~LOAD-DESKTOP-FILES~
 **** Syntax
@@ -92,15 +106,31 @@ actually change soon; client code should not rely on that.
 **** Arguments and values
 - ~subdir~ :: A subdirectory underneath ~*xdg-data-home*~ to search;
               defaults to =#P"applications/"​=
-- ~desktop-files~ :: A list containing all parsed desktop files found
+- ~desktop-files~ :: A ~DESKTOP-FILES~ object containing all parsed
+     desktop files found
 **** Description
 ~load-desktop-files~ finds & parses all desktop files from ~subdir~
 underneath ~*xdg-data-home*~.
-**** Bugs
-Currently, the filename or desktop file ID of a desktop file is not
-preserved.  This means that it is not straightforward to read in, say,
-all startup files and have ones higher in precedence mask ones lower
-in precedence.
+
+*** Function ~ID~
+**** Syntax
+     ~id file → id~
+**** Arguments and values
+- ~file~ :: a ~DESKTOP-FILE~
+- ~id~ :: a string indicating the file's ID, if any
+**** Description
+Returns the calculated ID of ~FILE~.  This consists of the subpath
+beneath the particular search directory
+(e.g. =/usr/share/applications/=), with ~#\/~ replaced with ~#\-~.
+
+*** Function ~PATH~
+**** Syntax
+     ~path file → pathname~
+**** Arguments and values
+- ~file~ :: a ~DESKTOP-FILE~
+- ~id~ :: a pathname
+**** Description
+Returns the path ~FILE~ was loaded from.
 
 *** Function ~GET-STRING-KEY~
 **** Syntax

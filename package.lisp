@@ -6,6 +6,11 @@
   (:export #:parse-desktop-file
            #:load-desktop-files
 
+           #:desktop-file
+           #:desktop-files
+
+           #:id
+           #:path
            #:get-string-key
            #:get-strings-key
            #:get-locale-string-key

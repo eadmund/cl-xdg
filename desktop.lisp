@@ -50,7 +50,7 @@
             (setf (get-ordered-hash key hash) value))
        finally (return (make-instance 'desktop-file
                                       :hash hash
-                                      :path (pathname filespace))))))
+                                      :path (pathname filespec))))))
 
 (defun parse-desktop-file-line (line current-group)
   "Given a line and the currently-active group, return a key and a
@@ -252,3 +252,7 @@ define any standard number keys anyway."
           (setf (gethash id hash) desktop-file
                 (slot-value desktop-file 'id) id))
      finally (return (make-instance 'desktop-files :files hash))))
+
+(defun find-desktop-file-by-id (files id)
+  "Find the desktop file with the given ID in FILES."
+  (gethash id (slot-value files 'files)))

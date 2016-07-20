@@ -34,7 +34,7 @@
 
 (defun load-desktop-file (filespec)
   "Load the desktop file found in FILESPEC into a DESKTOP-FILE object."
-  (with-open-file (file filespec :external-format :utf-8)
+  (with-open-file (file filespec :external-format asdf:*utf-8-external-format*)
     ;; stash each line of the file into an ordered hash table, with a
     ;; key designed to be easy to look up: comments just get a gensym;
     ;; group lines use the group name; keys use (GROUP KEY) or (GROUP

@@ -232,8 +232,8 @@ define any standard number keys anyway."
       (parse-number:parse-real-number value))))
 
 (defun load-desktop-files (&optional (subdir #P"applications/"))
-  "Load desktop files from SUBDIR underneath *XDG-DATA-HOME* and each
-  of *XDG-DATA-DIRS*.  Desktop files found under #P\"applications/\"
+  "Load desktop files from SUBDIR underneath $XDG_DATA_HOME and each
+  of $XDG_DATA_DIRS.  Desktop files found under #P\"applications/\"
   have IDs; files earlier in the search path take precedence over
   files later in the search path with the same ID."
   ;; FIXME: this is hideous code
@@ -245,10 +245,10 @@ define any standard number keys anyway."
                                                 (uiop:merge-pathnames*
                                                  "*.desktop"
                                                  (uiop:wilden subdir))))))
-                                   (cons *xdg-data-home* *xdg-data-dirs*))
+                                   (cons (uiop:xdg-data-home) (uiop:xdg-data-dirs)))
      with hash = (make-hash-table :test 'equal)
      unless (gethash id hash)
-     do (let ((desktop-file (parse-desktop-file file)))
+     do (let ((desktop-file (load-desktop-file file)))
           (setf (gethash id hash) desktop-file
                 (slot-value desktop-file 'id) id))
      finally (return (make-instance 'desktop-files :files hash))))

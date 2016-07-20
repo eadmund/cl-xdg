@@ -32,8 +32,8 @@
          :initarg :path
          :reader path)))
 
-(defun parse-desktop-file (filespec)
-  "Parse a desktop file."
+(defun load-desktop-file (filespec)
+  "Load the desktop file found in FILESPEC into a DESKTOP-FILE object."
   (with-open-file (file filespec :external-format :utf-8)
     ;; stash each line of the file into an ordered hash table, with a
     ;; key designed to be easy to look up: comments just get a gensym;

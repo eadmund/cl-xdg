@@ -7,74 +7,6 @@ CL-XDG provides access to
 desktop entries]].
 ** API
 
-*** Variable ~XDG-DATA-HOME~
-**** Value type
-A pathname
-**** Initial value
-The value of ~$XDG_DATA_HOME~, or if that is unset or empty then
-=~/.local/share/=
-**** Description
-This indicates the base directory relative to which user-specific data
-files should be stored, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG Base Directory Specification]].
-
-*** Variable ~XDG-CONFIG-HOME~
-**** Value type
-A pathname
-**** Initial value
-The value of ~$XDG_CONFIG_HOME~, or if that is unset or empty then
-=~/.config/=
-**** Description
-This indicates the base directory relative to which user-specific
-configuration files should be stored, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG Base Directory
-Specification]].
-
-*** Variable ~XDG-DATA-DIRS~
-**** Value type
-A list of pathnames
-**** Initial value
-The value of ~$XDG_DATA_DIRS~, or if that is unset or empty then
-=("/usr/local/share" "/usr/share/")=
-**** Description
-This is a preference-ordered list of base directories to search for
-data files in addition to ~*xdg-data-home*~, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG Base
-Directory Specification]].
-
-*** Variable ~XDG-CONFIG-DIRS~
-**** Value type
-A list of pathnames
-**** Initial value
-The value of ~$XDG_CONFIG_DIRS~, or if that is unset or empty then
-=/etc/xdg=
-**** Description
-This is a preference-ordered list of base directories to search for
-configuration files in additon to ~xdg-config-home*~, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG
-Base Directory Specification]].
-
-*** Variable ~XDG-CACHE-HOME~
-**** Value type
-A pathname
-**** Initial value
-The value of ~$XDG_CACHE_HOME~, or if that is unset or empty then
-=~/.cache=
-**** Description
-This indicates the base directory relative to which user-specific
-non-essential data files should be stored, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG Base Directory
-Specification]].
-
-*** Variable ~XDG-RUNTIME-DIR~
-**** Value type
-A pathname
-**** Initial value
-The value of ~$XDG_RUNTIME_DIR~, or if that is unset or empty then
-a randomly-created random directory of the form =/tmp/branch.XXXXXX=
-**** Description
-This indicates the base directory relative to which user-specific data
-files should be stored, per the [[https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html][XDG Base Directory Specification]].
-**** Bugs
-Random directory filename generation is only supported on SBCL, using
-~SB-POSIX:MKDTEMP~.  Other implementations will encounter a warning if
-~$XDG_CACHE_HOME~ is unset or empty.
-
 *** Class ~DESKTOP-FILE~
 **** Class precedence list
      ~standard-object~, ~t~
@@ -91,14 +23,25 @@ values), booleans or numbers.
 An object of class ~DESKTOP-FILES~ represents a collection of
 precedence-ordered parsed desktop files.  It will be possible to query
 such a collection to retrieve a particular desktop file.
-*** Function ~PARSE-DESKTOP-FILE~
+
+*** FUNCTION ~FIND-DESKTOP-FILE-BY-ID~
+**** Syntax
+     ~find-desktop-file-by-id files id~
+**** Arguments and values
+- ~files~ :: a DESKTOP-FILES object
+- ~id~ :: a string
+**** Description
+~find-desktop-file-by-id~ returns the desktop file with a particular
+ID (as documented under ~id~).
+
+*** Function ~LOAD-DESKTOP-FILE~
 **** Syntax
      ~parse-desktop-file filespec → desktop-file~
 **** Arguments and values
 - ~filespec~ :: a pathname designator
 - ~desktop-file~ :: an opaque object representing a parsed desktop file
 **** Description
-~parse-desktop-file~ reads a single desktop file from disk.
+~load-desktop-file~ reads a single desktop file from disk.
 
 *** Function ~LOAD-DESKTOP-FILES~
 **** Syntax

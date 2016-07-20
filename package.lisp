@@ -17,3 +17,6 @@
            #:get-locale-strings-key
            #:get-boolean-key
            #:get-number-key))
+
+(defpackage #:cl-xdg-test
+  (:use #:cl #:fiveam #:cl-xdg))

@@ -1,6 +1,8 @@
 ;;;; package.lisp
 ;;;; Copyright (C) 2016 by Robert A. Uhl
 
+(in-package "CL-USER")
+
 (defpackage #:cl-xdg
   (:use #:cl)
   (:export #:parse-desktop-file
@@ -17,6 +19,3 @@
            #:get-locale-strings-key
            #:get-boolean-key
            #:get-number-key))
-
-(defpackage #:cl-xdg-test
-  (:use #:cl #:fiveam #:cl-xdg))

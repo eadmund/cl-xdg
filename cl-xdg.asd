@@ -13,7 +13,6 @@
                (:file "desktop")))
 
 (defsystem #:cl-xdg-test
-  :depends-on (#:cl-xdg #:fiveam)
-  :components ((:file "test"))
-  :perform (test-op (o s)
-                    (uiop:symbol-call '#:fiveam '#:run!)))
+  :depends-on (#:cl-xdg #:fiveam #:asdf #:uiop)
+  :components ((:file "package")
+               (:file "test")))

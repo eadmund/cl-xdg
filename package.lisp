@@ -16,11 +16,4 @@
            #:get-locale-string-key
            #:get-locale-strings-key
            #:get-boolean-key
-           #:get-number-key
-
-           #:*xdg-data-home*
-           #:*xdg-config-home*
-           #:*xdg-data-dirs*
-           #:*xdg-config-dirs*
-           #:*xdg-cache-home*
-           #:*xdg-runtime-dir*))
+           #:get-number-key))

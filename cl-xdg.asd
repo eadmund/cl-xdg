@@ -8,6 +8,5 @@
   :serial t
   :depends-on (#:uiop #:split-sequence #:parse-number #+sbcl #:sb-posix)
   :components ((:file "package")
-               (:file "xdg-vars")
                (:file "ordered-hash-table")
                (:file "desktop")))

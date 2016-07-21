@@ -5,8 +5,9 @@
 
 (defpackage #:cl-xdg
   (:use #:cl)
-  (:export #:parse-desktop-file
+  (:export #:load-desktop-file
            #:load-desktop-files
+           #:find-desktop-file-by-id
 
            #:desktop-file
            #:desktop-files

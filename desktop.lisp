@@ -84,7 +84,7 @@
 
 (defun lc-messages-to-locales ()
   "Convert LC_MESSAGES to a preference-ordered list of locales."
-  (let ((lc-messages (getenv-or-default "LC_MESSAGES" nil)))
+  (let ((lc-messages (uiop:getenvp "LC_MESSAGES")))
     (when lc-messages
       (destructuring-bind (lang country encoding modifier &aux locales)
           (parse-locale lc-messages)
@@ -223,7 +223,7 @@ is replaced with replacement."
         ((string= value "true") t)
         (t (error "malformed boolean"))))))
 
-(defun get-numeric-key (key file &key (group "Desktop Entry"))
+(defun get-number-key (key file &key (group "Desktop Entry"))
   "PARSE-NUMBER:PARSE-NUMBER doesn't _quite_ implement the semantics
 of strtod/sscanf, but it's portable.  The desktop file spec doesn't
 define any standard number keys anyway."

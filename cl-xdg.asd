@@ -7,6 +7,12 @@
   :license "GNU General Public License"
   :serial t
   :depends-on (#:uiop #:split-sequence #:parse-number #+sbcl #:sb-posix)
+  :in-order-to ((test-op (test-op #:cl-xdg-test)))
   :components ((:file "package")
                (:file "ordered-hash-table")
                (:file "desktop")))
+
+(defsystem #:cl-xdg-test
+  :depends-on (#:cl-xdg #:fiveam #:asdf #:uiop)
+  :components ((:file "package")
+               (:file "test")))

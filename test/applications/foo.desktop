@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Test
+Field2=Test2
+Field2[en]=Test3
+Field2[en@test]=Test4
+Field2[en_US]=Test5
+Field2[en_US@test]=Test6
+Field2[ang]=Hwæt
+# Here's a comment
+Field3=12
+Field4=true

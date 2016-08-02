@@ -71,4 +71,33 @@ BUG: cannot unset an environment variable, but rather sets it to \"\"."
       (is (= (get-number-key "Field3" file) 12))
       (is-true (get-boolean-key "Field4" file)))))
 
+(test merge-menus
+  (let* ((menu-a '(:name "Foo" :submenus ((:name "Bar"
+                                           :filter (category "Apps")
+                                           :submenus ((:name "Quuux" :filter
+                                                             (category "quuuxes"))))
+                                          (:name "Baz"
+                                           :filter (category "Others")
+                                           :submenus ((:name "Quuux" :filter
+                                                             (category "more quuuxes")))))))
+         (menu-b '(:name "Quux" :submenus ((:name "Baz"
+                                            :filter (category "Apps")
+                                            :submenus ((:name "Quuux" :filter
+                                                              (category "yet more quuuxes")))))))
+         (merged (cl-xdg::merge-menus menu-a menu-b)))
+    (is (equal merged
+               '(:name "Foo"
+                 :submenus ((:name "Bar"
+                             :filter (category "Apps")
+                             :submenus ((:name "Quuux"
+                                               :filter
+                                               (category "quuuxes"))))
+                            (:name "Baz"
+                             :filter ((category "Others")
+                                      (category "Apps"))
+                             :submenus ((:name
+                                         "Quuux"
+                                         :filter ((category "more quuuxes")
+                                                  (category "yet more quuuxes")))))))))))
+
 (run!)

@@ -10,7 +10,7 @@
                #:split-sequence
                #:parse-number
                #:flexi-streams
-               #:cl-xmlspam
+               #:cl-sxml
                #+sbcl #:sb-posix )
   :in-order-to ((test-op (test-op #:cl-xdg-test)))
   :components ((:file "package")

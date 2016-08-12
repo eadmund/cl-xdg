@@ -1,0 +1,11 @@
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+"http://www.freedesktop.org/standards/menu-spec/menu-1.0.dtd">
+
+<!--
+ taken from https://specifications.freedesktop.org/menu-spec/menu-spec-1.1.html#example
+ -->
+
+<Menu>
+  <Name>Another</Name>
+  <Directory>another.directory</Directory>
+</Menu>

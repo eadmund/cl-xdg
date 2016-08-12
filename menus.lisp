@@ -7,6 +7,14 @@
   (declare (ignore a b))
   (flexi-streams:make-in-memory-input-stream nil))
 
+(defun dtd-resolver (public-id system-id)
+  (declare (ignore system-id))
+  (cond
+    ((find public-id '("-//freedesktop//DTD Menu 1.0//EN"
+                       "-//freedesktop//DTD Menu 0.8//EN")
+           :test #'string=)
+     (open (asdf:system-relative-pathname '#:cl-xdg "dtds/menu-latest.dtd")))))
+
 (defun build-filter (source)
   (xspam:with-xspam-source source
     (let (exprs)
@@ -75,7 +83,88 @@
 
 (defvar *menu-files-in-flight* nil)
 
-(defun read-menu (source)
+(defun read-menu (filespec)
+  (let* ((handler (make-instance 'cl-sxml:sxml-handler
+                                 :package (find-package '#:cl-xdg/sxml)))
+         (truename (uiop:ensure-pathname filespec))
+         (*menu-files-in-flight* (cons truename *menu-files-in-flight*)))
+    (unless truename
+      (error "cannot find menu file ~a" filespec))
+    (when (find truename (rest *menu-files-in-flight*) :test #'equal)
+      (error "already loading menu file ~a" filespec))
+    (car (merge-menus
+          (cxml:parse-file truename handler :entity-resolver #'dont-resolve-entities)))))
+
+(defun merge-path (path)
+  (rest
+   (remove 'cl-xdg/sxml:|Name|
+           (find 'cl-xdg/sxml:|Menu|
+                 (cdar
+                  (merge-menus
+                   (read-menu
+                    (uiop:merge-pathnames* path (first *menu-files-in-flight*)))))
+                 :key #'first)
+           :key (lambda (x) (when (consp x) (first x))))))
+
+(defun merge-parent ()
+  ;; see if the current file is a child of any XDG data directory
+  (let ((file (first *menu-files-in-flight*))
+        (data-dirs (cons (uiop:xdg-data-home) (uiop:xdg-data-dirs))))
+    (loop for dir in data-dirs
+       for path = (uiop:subpathp file dir)
+       when path
+       do (loop for parent-dir in (remove dir data-dirs :test #'equal)
+             for subpath = (uiop:file-exists-p
+                            (uiop:merge-pathnames* path parent-dir))
+             when subpath
+             do (return-from merge-parent (merge-path subpath))))))
+
+(defun merge-file (element)
+  (cond
+    ((and (consp (second element))
+           (eq (first (second element)) 'cl-xdg/sxml:@))
+     (let ((type (second
+                  (find 'cl-xdg/sxml:|type| (rest (second element)) :key #'first))))
+       (cond
+         ((string= type "parent") (merge-parent))
+         ((string= type "path") (merge-path (third element)))
+         (t (error "don't understand MergeFile type ~a" type)))))
+    ((stringp (second element))
+     (merge-path (second element)))
+    (t (error "unparseable MergeFile contents: ~s" (second element)))))
+
+(defun merge-dir (path)
+  (let* ((path (uiop:ensure-directory-pathname path))
+         (dir (uiop:subpathname
+               (uiop:pathname-directory-pathname(first *menu-files-in-flight*))
+               path))
+         (paths (uiop:directory* (uiop:merge-pathnames* #P"*.menu" dir))))
+    (append (mapcar #'merge-path paths))))
+
+(defun merge-menus (element)
+  "Process MergeFile, MergeDir and LegacyDir elements, and remove
+extraneous whitespace."
+  (typecase element
+    (string (let ((string (string-trim
+                           '(#\Space #\Backspace #\Tab #\Linefeed #\Page
+                             #\Return #\Newline #\Rubout)
+                           element)))
+              (when (string/= string "")
+                (list string))))
+    (symbol (list element))
+    (cons (case (car element)
+            (cl-xdg/sxml:|MergeFile| (merge-file element))
+            (cl-xdg/sxml:|MergeDir| (merge-dir (second element)))
+            (cl-xdg/sxml:|LegacyDir| )
+            (t (list (apply 'concatenate 'cons (mapcar #'merge-menus element))))))))
+
+#|(defun merge-if (element)
+  (when ))
+
+(defun fold-menu (menu)
+  (mapl ))|#
+
+(defun read-menu (path source)
   (xspam:with-xspam-source source
     (let (name
           submenus
@@ -94,7 +183,7 @@
                     name xspam:_))
            (setf name xspam:_)))
         (xspam:element "Menu"
-          (push (read-menu source) submenus))
+          (push (read-menu path source) submenus))
         (xspam:element "AppDir"
           (xspam:text (push xspam:_ app-dirs)))
         (xspam:element "DefaultAppDirs"
@@ -125,7 +214,7 @@
           (push (cons 'exclude (build-filter source)) filter))
         (xspam:element "MergeFile"
          (let ((type 'path)
-               path)
+               child-path)
            (xspam:optional-attribute "type"
              (setf type
                    (cond
@@ -135,11 +224,15 @@
            (xspam:optional
             (xspam:text
              (when (eq type 'path)
-               (setf path (pathname xspam:_)))))
-           (when (find path *menu-files-in-flight* :test 'equal)
+               (setf child-path (pathname xspam:_)))))
+           (format t "~&~a ~a ~a" type child-path (uiop:relative-pathname-p child-path))
+           (when (and (eq type 'path) (uiop:relative-pathname-p child-path))
+             (setf child-path (uiop:merge-pathnames* child-path path)))
+           (format t "~&~a ~a" child-path (uiop:relative-pathname-p child-path))
+           (when (find child-path *menu-files-in-flight* :test 'equal)
              ;; FIXME: in the future, offer ignorable restart
              (error "infinite menu merge detected"))
-           (push path *menu-files-in-flight*)
+           (push child-path *menu-files-in-flight*)
            (destructuring-bind (&key child-name
                                      child-app-dirs
                                      child-directory-dirs
@@ -149,8 +242,9 @@
                                       only-unallocated-p)
                                      (child-deleted nil deleted-p)
                                      child-filter)
-               (read-menu (xspam:make-xspam-source
-                           path
+               (read-menu child-path
+                          (xspam:make-xspam-source
+                           child-path
                            :entity-resolver #'dont-resolve-entities))
              (declare (ignore child-name))
              (when child-app-dirs
@@ -189,10 +283,11 @@
 (defun load-menu-file (filespec)
   (when (find filespec *menu-files-in-flight* :test 'equal)
     (return-from load-menu-file nil))
-  (let ((source (xspam:make-xspam-source
-                 (pathname filespec)
+  (let* ((path (pathname filespec))
+         (source (xspam:make-xspam-source
+                 path
                  :entity-resolver #'dont-resolve-entities))
         (*menu-files-in-flight* (cons filespec *menu-files-in-flight*)))
     (xspam:with-xspam-source source
       ;; FIXME: after reading, deduplicate & consolidate
-      (xspam:element "Menu" (read-menu source)))))
+      (xspam:element "Menu" (read-menu path source)))))

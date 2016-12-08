@@ -15,71 +15,71 @@
            :test #'string=)
      (open (asdf:system-relative-pathname '#:cl-xdg "dtds/menu-latest.dtd")))))
 
-(defun build-filter (source)
-  (xspam:with-xspam-source source
-    (let (exprs)
-      (xspam:zero-or-more
-       (xspam:one-of
-        (xspam:element "And"
-          (push (list 'and (build-filter source)) exprs))
-        (xspam:element "Or"
-          (push (list 'or (build-filter source)) exprs))
-        (xspam:element "Not"
-          (push (list 'not (build-filter source)) exprs))
-        (xspam:element "All"
-          (return t))
-        (xspam:element "Filename"
-          (xspam:text
-           (push (list 'filename xspam:_) exprs)))
-        (xspam:element "Category"
-          (xspam:text
-           (push (list 'category xspam:_) exprs)))))
-      (if (> (length exprs) 1)
-          (cons 'or exprs)
-          (first exprs)))))
+;; (defun build-filter (source)
+;;   (xspam:with-xspam-source source
+;;     (let (exprs)
+;;       (xspam:zero-or-more
+;;        (xspam:one-of
+;;         (xspam:element "And"
+;;           (push (list 'and (build-filter source)) exprs))
+;;         (xspam:element "Or"
+;;           (push (list 'or (build-filter source)) exprs))
+;;         (xspam:element "Not"
+;;           (push (list 'not (build-filter source)) exprs))
+;;         (xspam:element "All"
+;;           (return t))
+;;         (xspam:element "Filename"
+;;           (xspam:text
+;;            (push (list 'filename xspam:_) exprs)))
+;;         (xspam:element "Category"
+;;           (xspam:text
+;;            (push (list 'category xspam:_) exprs)))))
+;;       (if (> (length exprs) 1)
+;;           (cons 'or exprs)
+;;           (first exprs)))))
 
-(defun merge-menus (a b)
-  "Merge B into A.  A should be a menu plist being processed; B should
-  be a completed menu plist.
+;; (defun merge-menus (a b)
+;;   "Merge B into A.  A should be a menu plist being processed; B should
+;;   be a completed menu plist.
 
-1. Merge child menus
-2. Resolve duplicate Move elements"
-  (flet ((extract-submenus (menu hash start)
-           (loop for submenu in (getf menu :submenus)
-              for i from start
-              for pre-existing = (gethash (getf submenu :name) hash)
-              do (setf (gethash (getf submenu :name) hash)
-                       (cons i (if pre-existing
-                                   (merge-menus (cdr pre-existing) submenu)
-                                   submenu)))
-              finally (return i))))
-    (let* ((hash (make-hash-table :test 'equal))
-           submenus
-           (app-dirs (delete-duplicates (append (getf a :app-dirs)
-                                                (getf b :app-dirs))
-                                        :from-end t
-                                        :test #'equal))
-           (directory-dirs (delete-duplicates (append (getf a :directory-dirs)
-                                                      (getf b :directory-dirs))
-                                              :from-end t
-                                              :test #'equal))
-           (filter-a (getf a :filter))
-           (filter-b (getf b :filter))
-           (filter (cond
-                     ((and filter-a filter-b) (list filter-a filter-b))
-                     (filter-a filter-a)
-                     (filter-b filter-b))))
-      (extract-submenus b hash (extract-submenus a hash 0))
-      (maphash (lambda (k v)
-                 (declare (ignorable k))
-                 (push v submenus))
-               hash)
-      (setf submenus (mapcar #'cdr (sort submenus #'< :key #'car)))
-      `(:name ,(getf a :name)
-              ,@(when app-dirs `(:app-dirs ,app-dirs))
-              ,@(when directory-dirs `(:directory-dirs ,directory-dirs))
-              ,@(when filter `(:filter ,filter))
-              ,@(when submenus `(:submenus ,submenus))))))
+;; 1. Merge child menus
+;; 2. Resolve duplicate Move elements"
+;;   (flet ((extract-submenus (menu hash start)
+;;            (loop for submenu in (getf menu :submenus)
+;;               for i from start
+;;               for pre-existing = (gethash (getf submenu :name) hash)
+;;               do (setf (gethash (getf submenu :name) hash)
+;;                        (cons i (if pre-existing
+;;                                    (merge-menus (cdr pre-existing) submenu)
+;;                                    submenu)))
+;;               finally (return i))))
+;;     (let* ((hash (make-hash-table :test 'equal))
+;;            submenus
+;;            (app-dirs (delete-duplicates (append (getf a :app-dirs)
+;;                                                 (getf b :app-dirs))
+;;                                         :from-end t
+;;                                         :test #'equal))
+;;            (directory-dirs (delete-duplicates (append (getf a :directory-dirs)
+;;                                                       (getf b :directory-dirs))
+;;                                               :from-end t
+;;                                               :test #'equal))
+;;            (filter-a (getf a :filter))
+;;            (filter-b (getf b :filter))
+;;            (filter (cond
+;;                      ((and filter-a filter-b) (list filter-a filter-b))
+;;                      (filter-a filter-a)
+;;                      (filter-b filter-b))))
+;;       (extract-submenus b hash (extract-submenus a hash 0))
+;;       (maphash (lambda (k v)
+;;                  (declare (ignorable k))
+;;                  (push v submenus))
+;;                hash)
+;;       (setf submenus (mapcar #'cdr (sort submenus #'< :key #'car)))
+;;       `(:name ,(getf a :name)
+;;               ,@(when app-dirs `(:app-dirs ,app-dirs))
+;;               ,@(when directory-dirs `(:directory-dirs ,directory-dirs))
+;;               ,@(when filter `(:filter ,filter))
+;;               ,@(when submenus `(:submenus ,submenus))))))
 
 (defvar *menu-files-in-flight* nil)
 

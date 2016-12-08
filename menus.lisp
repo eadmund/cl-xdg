@@ -162,7 +162,7 @@ extraneous whitespace."
   (when ))
 
 (defun fold-menu (menu)
-  (mapl ))|#
+  (mapl ))
 
 (defun read-menu (path source)
   (xspam:with-xspam-source source
@@ -291,3 +291,4 @@ extraneous whitespace."
     (xspam:with-xspam-source source
       ;; FIXME: after reading, deduplicate & consolidate
       (xspam:element "Menu" (read-menu path source)))))
+|#
